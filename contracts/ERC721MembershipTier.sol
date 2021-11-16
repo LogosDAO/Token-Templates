@@ -27,10 +27,8 @@ contract ERC721MembershipTier is ERC721, AccessControl, IERC721MembershipTier {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
 
-    address public ethSink; /* Destination for funds from sales */
-
-    mapping(uint256 => uint256) tokenTier; /* Track the membership tier for each token ID*/
-    mapping(uint256 => string) tierUri; /* Set URI for each token tier */
+    mapping(uint256 => uint256) public tokenTier; /* Track the membership tier for each token ID*/
+    mapping(uint256 => string) public tierUri; /* Set URI for each token tier */
 
     /// @dev Construtor sets the token metadata and the roles
     /// @param name_ Token name
