@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
@@ -19,7 +19,7 @@ interface IERC721MembershipTier {
 ///     ERC721 contract with:
 ///         Minting by authorized contract - Separate sale contract or avatar
 ///
-contract ERC721MembershipTier is ERC721, AccessControl, IERC721MembershipTier {
+contract ERC721MembershipTier is ERC721Enumerable, AccessControl, IERC721MembershipTier {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -83,11 +83,11 @@ contract ERC721MembershipTier is ERC721, AccessControl, IERC721MembershipTier {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(AccessControl, ERC721)
+        override(AccessControl, ERC721Enumerable)
         returns (bool)
     {
         return
-            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IERC721Enumerable).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
             interfaceId == type(IAccessControl).interfaceId ||
             super.supportsInterface(interfaceId);

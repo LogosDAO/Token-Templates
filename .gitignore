@@ -5,3 +5,5 @@ src/types/*
 artifacts/*
 
 cache/*
+
+*.txt

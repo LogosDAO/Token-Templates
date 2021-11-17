@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Example query",
+    "strategy": {
+      "name": "erc721-weighted-tier",
+      "params": {
+        "address": "0xB357fE40650398a5dfCc4D5896051F5544Ad2dDD",
+        "symbol": "TEST",
+        "weights": {
+          "1": 1,
+          "2": 0.5
+        }
+      }
+    },
+    "network": "4",
+    "addresses": [
+      "0x5AAF1550C05EcF287F51954E263b9a44D0557617",
+      "0x744222844bFeCC77156297a6427B5876A6769e19"
+    ],
+    "snapshot": 9659202
+  }
+]
