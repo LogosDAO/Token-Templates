@@ -54,4 +54,22 @@ describe('ERC721 Membership Tiers', function () {
       })
     })
   })
+
+  describe('interfaces', function () {
+    // it('verify deployment parameters', async function () {})
+
+    describe('balance by tier', function () {
+      it('Allows external call to check balance of an address by tier', async function () {
+        await memberNftAsMinter.mintTier(1, anyone.address)
+        await memberNftAsMinter.mintTier(2, anyone.address)
+        await memberNftAsMinter.mintTier(1, anyone.address)
+        await memberNftAsMinter.mintTier(1, anyone.address)
+        
+        const expectedTierBalances = [3, 1]
+
+        const tierBalances = await memberNft.balanceByTier(anyone.address, [1,2])
+        tierBalances.forEach((value, index) => expect(value).to.equal(expectedTierBalances[index]))
+      })
+    })
+  })
 })

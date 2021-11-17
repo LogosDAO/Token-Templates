@@ -92,4 +92,25 @@ contract ERC721MembershipTier is ERC721Enumerable, AccessControl, IERC721Members
             interfaceId == type(IAccessControl).interfaceId ||
             super.supportsInterface(interfaceId);
     }
+
+    function balanceByTier(address _owner, uint256[] memory _tiers) public view returns (uint256[] memory) {
+        uint256 _ownerBalance = balanceOf(_owner);
+        uint256[] memory _ownerTokenIds = new uint256[](_ownerBalance);
+
+        for (uint256 _i = 0; _i < _ownerBalance; _i++) {
+            _ownerTokenIds[_i] = tokenOfOwnerByIndex(_owner, _i);
+        }
+
+        uint256[] memory _tierBalances = new uint256[](_tiers.length);
+
+        for (uint256 _i = 0; _i < _ownerBalance; _i++) {
+            for (uint256 _j = 0; _j < _tiers.length; _j++) {
+                if (tokenTier[_ownerTokenIds[_i]] == _tiers[_j]) {
+                    _tierBalances[_j]++;
+                }
+            }
+        }
+
+        return _tierBalances;
+    }
 }
