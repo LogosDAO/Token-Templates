@@ -1,12 +1,16 @@
 const { ethers } = require('hardhat')
+import { Erc1155Shares } from '../src/types/Erc1155Shares'
 
-import { Erc721MembershipTier } from '../src/types/Erc721MembershipTier'
 
 async function main() {
 
-  const MemberNft = await ethers.getContractFactory('ERC721MembershipTier')
+  const MemberNft = await ethers.getContractFactory('ERC1155Shares')
+  
+  const uri = 'https://minty-dev-assets.s3.amazonaws.com/shares/{id}.json'
 
-  const memberNft = (await MemberNft.deploy('test', 'TEST')) as Erc721MembershipTier
+  const memberNft = (await MemberNft.deploy(uri)) as Erc1155Shares
+  
+  await memberNft.setTokenAdmin(1, '0x744222844bFeCC77156297a6427B5876A6769e19')
   
   console.log({memberNft})
 }

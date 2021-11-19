@@ -93,6 +93,7 @@ contract ERC721MembershipTier is ERC721Enumerable, AccessControl, IERC721Members
             super.supportsInterface(interfaceId);
     }
 
+    ///@dev Accounting function useful for using NFTs in voting
     function balanceByTier(address _owner, uint256[] memory _tiers) public view returns (uint256[] memory) {
         uint256 _ownerBalance = balanceOf(_owner);
         uint256[] memory _ownerTokenIds = new uint256[](_ownerBalance);
