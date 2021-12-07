@@ -8,7 +8,7 @@ import "hardhat/console.sol";
 
 /// @title ERC1155Membership
 /// @dev ERC1155 contract with:
-///         Minting, burning by authorized contract
+///         Minting, burning by authorized address
 ///         Non transferable by default
 ///
 contract ERC1155Shares is ERC1155, Ownable {
@@ -20,7 +20,7 @@ contract ERC1155Shares is ERC1155, Ownable {
     mapping(uint256 => address) public tokenAdmins; /* Set admin for each token ID - generally the DAO's safe*/
     mapping(uint256 => bool) public transfersEnabled;
 
-    /// @dev Construtor sets the todo
+    /// @dev Construtor sets the token and contract URIs
     constructor(string memory uri_, string memory _contractURI) ERC1155(uri_) {
         contractURI = _contractURI;
     }
@@ -28,7 +28,11 @@ contract ERC1155Shares is ERC1155, Ownable {
     /*****************
     Admin Configuration
     *****************/
+    /// @notice Set admin for a specific token ID
+    /// @param _tokenId Token ID for new admin
+    /// @param _admin Address of admin
     function setTokenAdmin(uint256 _tokenId, address _admin) external {
+        // Contract owner can set the admin. Admin can also transfer control to a new admin
         require(
             owner() == msg.sender || tokenAdmins[_tokenId] == msg.sender,
             "!owner or admin"
@@ -87,13 +91,15 @@ contract ERC1155Shares is ERC1155, Ownable {
     /*****************
     Public interfaces
     *****************/
-    ///@dev Support interfaces for Access Control and ERC721
+    ///@dev Support interfaces for ERC1155
     function supportsInterface(bytes4 interfaceId)
         public
         view
         override(ERC1155)
         returns (bool)
     {
+        // console.log("ERC1155 Interface %s", type(IERC1155).interfaceId);
+        // console.log("ERC1155MD Interface %s", type(IERC1155MetadataURI).interfaceId);
         return
             interfaceId == type(IERC1155).interfaceId ||
             interfaceId == type(IERC1155MetadataURI).interfaceId ||
@@ -103,10 +109,6 @@ contract ERC1155Shares is ERC1155, Ownable {
     /*****************
     Hooks and internal utils
     *****************/
-    function _exists(uint256 _id) internal view returns (bool) {
-        return tokenAdmins[_id] != address(0);
-    }
-
     function _beforeTokenTransfer(
         address operator,
         address from,
