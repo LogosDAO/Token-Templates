@@ -25,7 +25,7 @@ const revertMessages = {
   redundantAdminChange: 'already admin',
 }
 
-describe.only('ERC1155 Shares', function () {
+describe('ERC1155 Shares', function () {
   let shareNft: Erc1155Shares
   let shareNftAsMinter: Erc1155Shares
   let shareNftAsAnyone: Erc1155Shares
