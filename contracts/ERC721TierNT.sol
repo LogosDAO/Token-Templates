@@ -35,16 +35,20 @@ contract ERC721TierNT is ERC721Enumerable, AccessControl {
     mapping(bytes32 => bool) public signatureUsed; /* track if consent signature has been used */
 
     bytes32 public root; /* Store merkle root of all token IDs which should be considered valid and not expired or revoked */
+    
+    bool public transferable; /* Store if NFTs should be transferable or not*/
 
     /// @dev Construtor sets the token metadata and the roles
     /// @param name_ Token name
     /// @param symbol_ Token symbol
-    constructor(string memory name_, string memory symbol_)
+    constructor(string memory name_, string memory symbol_, bool _transferable)
         ERC721(name_, symbol_)
     {
         _setupRole(MINTER_ROLE, msg.sender);
         _setupRole(OWNER_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        
+        transferable = _transferable;
     }
 
     /*****************
@@ -146,6 +150,6 @@ contract ERC721TierNT is ERC721Enumerable, AccessControl {
         address to,
         uint256 tokenId
     ) internal override(ERC721Enumerable) {
-        require(to == address(0) || from == address(0), "!transfer");
+        require(to == address(0) || from == address(0) || transferable, "!transfer");
     }
 }

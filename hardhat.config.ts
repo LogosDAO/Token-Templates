@@ -8,17 +8,17 @@ import 'solidity-coverage'
 import 'hardhat-typechain'
 
 import * as fs from 'fs'
-const defaultNetwork = "localhost";
+const defaultNetwork = 'localhost'
 
 function mnemonic() {
   try {
-    return fs.readFileSync("./mnemonic.txt").toString().trim();
+    return fs.readFileSync('./mnemonic.txt').toString().trim()
   } catch (e) {
-    if (defaultNetwork !== "localhost") {
-      console.log("☢️ WARNING: No mnemonic file created for a deploy account. Try `yarn run generate` and then `yarn run account`.")
+    if (defaultNetwork !== 'localhost') {
+      console.log('☢️ WARNING: No mnemonic file created for a deploy account. Try `yarn run generate` and then `yarn run account`.')
     }
   }
-  return "";
+  return ''
 }
 
 /**
@@ -37,14 +37,14 @@ const config: HardhatUserConfig = {
         },
       },
       {
-        version: "0.4.18",
+        version: '0.4.18',
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200
-          }
-        }
-      }
+            runs: 200,
+          },
+        },
+      },
     ],
   },
   networks: {
@@ -52,7 +52,14 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: true,
     },
     rinkeby: {
-      url: "https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
+      url: 'https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', //<---- YOUR INFURA ID! (or it won't work)
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    xdai: {
+      url: 'https://rpc.xdaichain.com/',
+      gasPrice: 1000000000,
       accounts: {
         mnemonic: mnemonic(),
       },

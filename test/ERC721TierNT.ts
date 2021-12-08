@@ -49,7 +49,7 @@ describe.only('ERC721 Membership Tiers', function () {
   })
 
   beforeEach(async function () {
-    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST')) as Erc721TierNt
+    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', false)) as Erc721TierNt
     memberNft = await memberNftAbstract.connect(deployer)
     memberNftAsMinter = await memberNftAbstract.connect(minter)
     memberNftAsAnyone = await memberNftAbstract.connect(anyone)
@@ -112,6 +112,20 @@ describe.only('ERC721 Membership Tiers', function () {
       it('Does not allow anyone else to set root', async function () {
         expect(memberNftAsAnyone.setRoot(testRoot)).to.be.revertedWith('!owner')
       })
+    })
+    
+    
+    describe('transferability', function () {
+      it('Allows transferability if set on deploy', async function() {
+          const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', true)) as Erc721TierNt
+          memberNft = await memberNftAbstract.connect(deployer)
+          await memberNft.mintTierAdmin(1, deployer.address)
+          expect(await memberNft.ownerOf(1)).to.equal(deployer.address)
+          await memberNft.transferFrom(deployer.address, anyone.address, 1)
+          expect(await memberNft.ownerOf(1)).to.equal(anyone.address)
+
+      })
+
     })
   })
 })
