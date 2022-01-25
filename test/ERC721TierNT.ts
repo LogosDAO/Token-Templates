@@ -4,6 +4,7 @@ import { use, expect } from 'chai'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 
 import { Erc721TierNt } from '../src/types/Erc721TierNt'
+import { NtConsumer } from '../src/types/NtConsumer'
 import { Wallet } from '@ethersproject/wallet'
 import { ContractFactory } from '@ethersproject/contracts'
 
@@ -22,7 +23,10 @@ const adminRole = '0x00000000000000000000000000000000000000000000000000000000000
 
 const testKey = '0xdd631135f3a99e4d747d763ab5ead2f2340a69d2a90fab05e20104731365fde3'
 
-const testRoot = '0xcfe8da5c0c808f5a1ce988f5a43b2a0ea752a7c0c091a2a828b9a7445c931507'
+async function blockTime() {
+  const block = await ethers.provider.getBlock('latest')
+  return block.timestamp
+}
 
 describe.only('ERC721 Membership Tiers', function () {
   let memberNft: Erc721TierNt
@@ -103,29 +107,77 @@ describe.only('ERC721 Membership Tiers', function () {
       })
     })
 
-    describe('root', function () {
-      it('Allows owner to set merkle root', async function () {
-        await memberNft.setRoot(testRoot)
-        expect(await memberNft.root()).to.equal(testRoot)
-      })
-
-      it('Does not allow anyone else to set root', async function () {
-        expect(memberNftAsAnyone.setRoot(testRoot)).to.be.revertedWith('!owner')
+    describe('transferability', function () {
+      it('Allows transferability if set on deploy', async function () {
+        const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', true)) as Erc721TierNt
+        memberNft = await memberNftAbstract.connect(deployer)
+        await memberNft.mintTierAdmin(1, deployer.address)
+        expect(await memberNft.ownerOf(1)).to.equal(deployer.address)
+        await memberNft.transferFrom(deployer.address, anyone.address, 1)
+        expect(await memberNft.ownerOf(1)).to.equal(anyone.address)
       })
     })
-    
-    
-    describe('transferability', function () {
-      it('Allows transferability if set on deploy', async function() {
-          const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', true)) as Erc721TierNt
-          memberNft = await memberNftAbstract.connect(deployer)
-          await memberNft.mintTierAdmin(1, deployer.address)
-          expect(await memberNft.ownerOf(1)).to.equal(deployer.address)
-          await memberNft.transferFrom(deployer.address, anyone.address, 1)
-          expect(await memberNft.ownerOf(1)).to.equal(anyone.address)
+  })
+})
 
+describe.only('ERC721 Membership Tiers Consumer', function () {
+  let memberNft: Erc721TierNt
+  let consumer: NtConsumer
+
+  let consumerAsHolder: NtConsumer
+
+  let deployer: SignerWithAddress
+  let minter: SignerWithAddress
+  let holder: SignerWithAddress
+
+  let author: Wallet
+
+  let MemberNft: ContractFactory
+  let Consumer: ContractFactory
+
+  this.beforeAll(async function () {
+    ;[deployer, minter, holder] = await ethers.getSigners()
+
+    const adminAbstract = new ethers.Wallet(testKey)
+    const provider = ethers.provider
+    author = await adminAbstract.connect(provider)
+
+    await deployer.sendTransaction({ to: author.address, value: ethers.utils.parseEther('10') })
+    MemberNft = await ethers.getContractFactory('ERC721TierNT')
+    Consumer = await ethers.getContractFactory('NTConsumer')
+  })
+
+  beforeEach(async function () {
+    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', false)) as Erc721TierNt
+    memberNft = await memberNftAbstract.connect(deployer)
+
+    await memberNft.grantRole(minterRole, minter.address)
+    await memberNft.grantRole(minterRole, author.address)
+
+    consumer = (await Consumer.deploy(author.address, memberNft.address)) as NtConsumer
+    consumerAsHolder = await consumer.connect(holder)
+  })
+
+  describe('validating', function () {
+    // it('verify deployment parameters', async function () {})
+
+    describe('consumer', function () {
+      it('Allows holder to access function that requires validation', async function () {
+        await memberNft.mintTierAdmin(1, holder.address)
+        expect(await memberNft.balanceOf(holder.address)).to.equal(1)
+
+        const currBlockTime = await blockTime()
+
+        const expiration = currBlockTime + 1000
+        console.log({ currBlockTime, expiration, address: memberNft.address})
+
+        const msgHash = ethers.utils.hashMessage(
+          ethers.utils.arrayify(ethers.utils.solidityKeccak256(['address', 'uint256', 'uint256'], [memberNft.address, 1, expiration]))
+        )
+        const sig = await author.signMessage(msgHash)
+
+        expect(await consumerAsHolder.protectedUpdate(100, 1, expiration, sig)).to.be.true
       })
-
     })
   })
 })

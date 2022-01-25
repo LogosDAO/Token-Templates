@@ -154,8 +154,10 @@ contract NTConsumer {
     address signer;
     IERC721TierNT tokenContract;
 
-    constructor(address _kycSigner, address _tokenContract) {
-        signer = _kycSigner;
+    uint256 public genericState;
+
+    constructor(address _signer, address _tokenContract) {
+        signer = _signer;
         tokenContract = IERC721TierNT(_tokenContract);
     }
 
@@ -178,6 +180,8 @@ contract NTConsumer {
         bytes32 _digest = keccak256(
             abi.encodePacked(address(tokenContract), _tokenId, _expiration)
         );
+        console.log(_tokenId, _expiration, address(tokenContract));
+        console.log(_digest.toEthSignedMessageHash().recover(_signature), signer);
         require(_verify(_digest, _signature, signer), "Not signer");
 
         return true;
@@ -193,5 +197,14 @@ contract NTConsumer {
         address account
     ) internal pure returns (bool) {
         return data.toEthSignedMessageHash().recover(signature) == account;
+    }
+
+    function protectedUpdate(
+        uint256 _stateUpdate,
+        uint256 _tokenId,
+        uint256 _expiration,
+        bytes memory _signature
+    ) public validOnly(_tokenId, _expiration, _signature) returns (bool) {
+        genericState = _stateUpdate;
     }
 }
