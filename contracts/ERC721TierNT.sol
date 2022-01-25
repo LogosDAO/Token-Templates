@@ -8,18 +8,16 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "hardhat/console.sol";
 
+interface IERC721TierNT {
+    function ownerOf(uint256 tokenId) external view returns (address owner);
+}
+
 /// @title ERC721TierNT
 /// @dev Non-transferable ERC721 contract with additional data for membership tiers
 ///
 ///  Features in this version
 ///
 ///     Admins can directly mint or give signatures to users to mint
-///     Admins can set merkle root of verified, non expired, non revoked users
-///
-///  Issues with current version
-///
-///     Merkle tree update pattern introduces time delay for on chain verifiability
-///     Single minting role for all tiers. Maybe we want different admins per tier
 ///
 contract ERC721TierNT is ERC721Enumerable, AccessControl {
     using ECDSA for bytes32; /*ECDSA for signature recovery for license mints*/
@@ -34,20 +32,20 @@ contract ERC721TierNT is ERC721Enumerable, AccessControl {
     mapping(uint256 => string) public tierUri; /* Set URI for each token tier */
     mapping(bytes32 => bool) public signatureUsed; /* track if consent signature has been used */
 
-    bytes32 public root; /* Store merkle root of all token IDs which should be considered valid and not expired or revoked */
-    
     bool public transferable; /* Store if NFTs should be transferable or not*/
 
     /// @dev Construtor sets the token metadata and the roles
     /// @param name_ Token name
     /// @param symbol_ Token symbol
-    constructor(string memory name_, string memory symbol_, bool _transferable)
-        ERC721(name_, symbol_)
-    {
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        bool _transferable
+    ) ERC721(name_, symbol_) {
         _setupRole(MINTER_ROLE, msg.sender);
         _setupRole(OWNER_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        
+
         transferable = _transferable;
     }
 
@@ -93,12 +91,6 @@ contract ERC721TierNT is ERC721Enumerable, AccessControl {
     function setTierURI(uint256 _tier, string memory _uri) external {
         require(hasRole(OWNER_ROLE, msg.sender), "!owner");
         tierUri[_tier] = _uri;
-    }
-
-    // @dev Set the merkle root of all current token IDs
-    function setRoot(bytes32 _root) external {
-        require(hasRole(OWNER_ROLE, msg.sender), "!owner");
-        root = _root;
     }
 
     /*****************
@@ -150,6 +142,56 @@ contract ERC721TierNT is ERC721Enumerable, AccessControl {
         address to,
         uint256 tokenId
     ) internal override(ERC721Enumerable) {
-        require(to == address(0) || from == address(0) || transferable, "!transfer");
+        require(
+            to == address(0) || from == address(0) || transferable,
+            "!transfer"
+        );
+    }
+}
+
+contract NTConsumer {
+    using ECDSA for bytes32; /*ECDSA for signature recovery for license mints*/
+    address signer;
+    IERC721TierNT tokenContract;
+
+    constructor(address _kycSigner, address _tokenContract) {
+        signer = _kycSigner;
+        tokenContract = IERC721TierNT(_tokenContract);
+    }
+
+    modifier validOnly(
+        uint256 _tokenId,
+        uint256 _expiration,
+        bytes memory _signature
+    ) {
+        require(validate(_tokenId, _expiration, _signature), "Invalid");
+        _;
+    }
+
+    function validate(
+        uint256 _tokenId,
+        uint256 _expiration,
+        bytes memory _signature
+    ) public returns (bool) {
+        require(_expiration > block.timestamp, "Expired");
+        require(tokenContract.ownerOf(_tokenId) == msg.sender, "!owner"); /*Sender must hold token*/
+        bytes32 _digest = keccak256(
+            abi.encodePacked(address(tokenContract), _tokenId, _expiration)
+        );
+        require(_verify(_digest, _signature, signer), "Not signer");
+
+        return true;
+    }
+
+    /// @dev Internal util to confirm seed sig
+    /// @param data Message hash
+    /// @param signature Sig from primary token holder
+    /// @param account address to compare with recovery
+    function _verify(
+        bytes32 data,
+        bytes memory signature,
+        address account
+    ) internal pure returns (bool) {
+        return data.toEthSignedMessageHash().recover(signature) == account;
     }
 }
