@@ -4,6 +4,7 @@
 
 // SPDX-License-Identifier: MIT
 
+
 pragma solidity ^0.8.0;
 
 /**
@@ -30,7 +31,6 @@ interface IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -174,7 +174,6 @@ interface IERC721 is IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721Receiver.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -204,7 +203,6 @@ interface IERC721Receiver {
 
 // File @openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -232,7 +230,6 @@ interface IERC721Metadata is IERC721 {
 
 // File @openzeppelin/contracts/utils/Address.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -452,7 +449,6 @@ library Address {
 
 // File @openzeppelin/contracts/utils/Context.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -479,7 +475,6 @@ abstract contract Context {
 
 // File @openzeppelin/contracts/utils/Strings.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -549,7 +544,6 @@ library Strings {
 
 // File @openzeppelin/contracts/utils/introspection/ERC165.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -579,7 +573,6 @@ abstract contract ERC165 is IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/ERC721.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -992,7 +985,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
 
 // File @openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -1022,7 +1014,6 @@ interface IERC721Enumerable is IERC721 {
 
 // File @openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -1186,7 +1177,6 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
 
 // File @openzeppelin/contracts/utils/cryptography/ECDSA.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -1409,7 +1399,6 @@ library ECDSA {
 
 // File @openzeppelin/contracts/access/IAccessControl.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -1500,7 +1489,6 @@ interface IAccessControl {
 
 // File @openzeppelin/contracts/access/AccessControl.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -1712,7 +1700,6 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
 
 // File @openzeppelin/contracts/utils/Counters.sol@v4.3.2
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -1758,7 +1745,6 @@ library Counters {
 
 // File hardhat/console.sol@v2.6.7
 
-// SPDX-License-Identifier: MIT
 pragma solidity >= 0.4.22 <0.9.0;
 
 library console {
@@ -3294,7 +3280,6 @@ library console {
 
 // File contracts/ERC721TierNT.sol
 
-// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
 

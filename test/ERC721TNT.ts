@@ -3,7 +3,7 @@ import { solidity } from 'ethereum-waffle'
 import { use, expect } from 'chai'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 
-import { Erc721TierNt } from '../src/types/Erc721TierNt'
+import { Erc721Nt } from '../src/types/Erc721Nt'
 import { NtConsumer } from '../src/types/NtConsumer'
 import { Wallet } from '@ethersproject/wallet'
 import { ContractFactory } from '@ethersproject/contracts'
@@ -28,10 +28,10 @@ async function blockTime() {
   return block.timestamp
 }
 
-describe.only('ERC721 Membership Tiers', function () {
-  let memberNft: Erc721TierNt
-  let memberNftAsMinter: Erc721TierNt
-  let memberNftAsAnyone: Erc721TierNt
+describe.only('ERC721 Membership', function () {
+  let memberNft: Erc721Nt
+  let memberNftAsMinter: Erc721Nt
+  let memberNftAsAnyone: Erc721Nt
 
   let deployer: SignerWithAddress
   let minter: SignerWithAddress
@@ -49,11 +49,11 @@ describe.only('ERC721 Membership Tiers', function () {
     author = await adminAbstract.connect(provider)
 
     await deployer.sendTransaction({ to: author.address, value: ethers.utils.parseEther('10') })
-    MemberNft = await ethers.getContractFactory('ERC721TierNT')
+    MemberNft = await ethers.getContractFactory('ERC721NT')
   })
 
   beforeEach(async function () {
-    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', false)) as Erc721TierNt
+    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', false)) as Erc721Nt
     memberNft = await memberNftAbstract.connect(deployer)
     memberNftAsMinter = await memberNftAbstract.connect(minter)
     memberNftAsAnyone = await memberNftAbstract.connect(anyone)
@@ -65,19 +65,20 @@ describe.only('ERC721 Membership Tiers', function () {
   describe('minting', function () {
     // it('verify deployment parameters', async function () {})
 
-    describe('mint tier admin', function () {
-      it('Allows minter to mint a token tier', async function () {
-        await memberNftAsMinter.mintTierAdmin(1, anyone.address)
+    describe('mint  admin', function () {
+      it('Allows minter to mint a token ', async function () {
+        await memberNftAsMinter.mintAdmin(anyone.address)
         expect(await memberNft.balanceOf(anyone.address)).to.equal(1)
       })
     })
 
-    describe('mint tier with signature', function () {
-      it('Allows minter to mint a token tier', async function () {
-        const msgHash = 
-          ethers.utils.arrayify(ethers.utils.solidityKeccak256(['uint256', 'address', 'address'], [1, anyone.address, memberNft.address]))
+    describe('mint  with signature', function () {
+      it('Allows minter to mint a token ', async function () {
+        const msgHash = ethers.utils.arrayify(
+          ethers.utils.solidityKeccak256(['uint256', 'address', 'address'], [1, anyone.address, memberNft.address])
+        )
         const sig = await author.signMessage(msgHash)
-        await memberNftAsAnyone.mintTier(1, anyone.address, 1, sig, author.address)
+        await memberNftAsAnyone.mint(1, sig)
         expect(await memberNft.balanceOf(anyone.address)).to.equal(1)
       })
 
@@ -85,8 +86,8 @@ describe.only('ERC721 Membership Tiers', function () {
         const msgHash = 
           ethers.utils.arrayify(ethers.utils.solidityKeccak256(['uint256', 'address', 'address'], [1, anyone.address, memberNft.address]))
         const sig = await author.signMessage(msgHash)
-        await memberNftAsAnyone.mintTier(1, anyone.address, 1, sig, author.address)
-        expect(memberNftAsAnyone.mintTier(1, anyone.address, 1, sig, author.address)).to.be.revertedWith('signature already used')
+        await memberNftAsAnyone.mint(1, sig)
+        expect(memberNftAsAnyone.mint(1, sig)).to.be.revertedWith('signature already used')
       })
 
       it('Fails if signer not authorized', async function () {
@@ -94,21 +95,21 @@ describe.only('ERC721 Membership Tiers', function () {
           ethers.utils.arrayify(ethers.utils.solidityKeccak256(['uint256', 'address', 'address'], [1, anyone.address, memberNft.address]))
         const sig = await author.signMessage(msgHash)
         await memberNft.revokeRole(minterRole, author.address)
-        expect(memberNftAsAnyone.mintTier(1, anyone.address, 1, sig, author.address)).to.be.revertedWith('!minter')
+        expect(memberNftAsAnyone.mint(1, sig)).to.be.revertedWith('invalid authorization')
       })
     })
     describe('no transfers', function () {
       it('Does not allow tokens ot be transfered', async function () {
-        await memberNftAsMinter.mintTierAdmin(1, anyone.address)
+        await memberNftAsMinter.mintAdmin(anyone.address)
         expect(memberNftAsAnyone.transferFrom(anyone.address, author.address, 1)).to.be.revertedWith('!transfer')
       })
     })
 
     describe('transferability', function () {
       it('Allows transferability if set on deploy', async function () {
-        const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', true)) as Erc721TierNt
+        const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', true)) as Erc721Nt
         memberNft = await memberNftAbstract.connect(deployer)
-        await memberNft.mintTierAdmin(1, deployer.address)
+        await memberNft.mintAdmin(deployer.address)
         expect(await memberNft.ownerOf(1)).to.equal(deployer.address)
         await memberNft.transferFrom(deployer.address, anyone.address, 1)
         expect(await memberNft.ownerOf(1)).to.equal(anyone.address)
@@ -117,8 +118,8 @@ describe.only('ERC721 Membership Tiers', function () {
   })
 })
 
-describe.only('ERC721 Membership Tiers Consumer', function () {
-  let memberNft: Erc721TierNt
+describe.only('ERC721 Membership s Consumer', function () {
+  let memberNft: Erc721Nt
   let consumer: NtConsumer
 
   let consumerAsHolder: NtConsumer
@@ -140,12 +141,12 @@ describe.only('ERC721 Membership Tiers Consumer', function () {
     author = await adminAbstract.connect(provider)
 
     await deployer.sendTransaction({ to: author.address, value: ethers.utils.parseEther('10') })
-    MemberNft = await ethers.getContractFactory('ERC721TierNT')
+    MemberNft = await ethers.getContractFactory('ERC721NT')
     Consumer = await ethers.getContractFactory('NTConsumer')
   })
 
   beforeEach(async function () {
-    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', false)) as Erc721TierNt
+    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', false)) as Erc721Nt
     memberNft = await memberNftAbstract.connect(deployer)
 
     await memberNft.grantRole(minterRole, minter.address)
@@ -155,4 +156,25 @@ describe.only('ERC721 Membership Tiers Consumer', function () {
     consumerAsHolder = await consumer.connect(holder)
   })
 
+  describe('validating', function () {
+    // it('verify deployment parameters', async function () {})
+
+    describe('consumer', function () {
+      it('Allows holder to access function that requires validation', async function () {
+        await memberNft.mintAdmin(holder.address)
+        expect(await memberNft.balanceOf(holder.address)).to.equal(1)
+
+        const currBlockTime = await blockTime()
+
+        const expiration = currBlockTime + 1000
+        console.log({ currBlockTime, expiration, address: memberNft.address })
+
+        const msgHash = 
+          ethers.utils.arrayify(ethers.utils.solidityKeccak256(['address', 'uint256', 'uint256', 'uint256'], [memberNft.address, 1, 1, expiration]))
+        const sig = await author.signMessage(msgHash)
+
+        await consumerAsHolder.joinDao(100, 1, 1, expiration, sig)
+      })
+    })
+  })
 })

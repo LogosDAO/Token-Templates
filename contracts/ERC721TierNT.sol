@@ -66,7 +66,7 @@ contract ERC721TierNT is ERC721Enumerable, AccessControl {
         );
         require(!signatureUsed[_digest], "signature already used");
         signatureUsed[_digest] = true; /*Mark signature as used so we cannot use it again*/
-        _verify(_digest, _signature, _minter); // verify auth was signed by owner of token ID 1
+        require(_verify(_digest, _signature, _minter)); // verify auth was signed by owner of token ID 1
         _mintTier(_tier, _dst);
     }
 
@@ -146,65 +146,5 @@ contract ERC721TierNT is ERC721Enumerable, AccessControl {
             to == address(0) || from == address(0) || transferable,
             "!transfer"
         );
-    }
-}
-
-contract NTConsumer {
-    using ECDSA for bytes32; /*ECDSA for signature recovery for license mints*/
-    address signer;
-    IERC721TierNT tokenContract;
-
-    uint256 public genericState;
-
-    constructor(address _signer, address _tokenContract) {
-        signer = _signer;
-        tokenContract = IERC721TierNT(_tokenContract);
-    }
-
-    modifier validOnly(
-        uint256 _tokenId,
-        uint256 _expiration,
-        bytes memory _signature
-    ) {
-        require(validate(_tokenId, _expiration, _signature), "Invalid");
-        _;
-    }
-
-    function validate(
-        uint256 _tokenId,
-        uint256 _expiration,
-        bytes memory _signature
-    ) public returns (bool) {
-        require(_expiration > block.timestamp, "Expired");
-        require(tokenContract.ownerOf(_tokenId) == msg.sender, "!owner"); /*Sender must hold token*/
-        bytes32 _digest = keccak256(
-            abi.encodePacked(address(tokenContract), _tokenId, _expiration)
-        );
-        console.log(_tokenId, _expiration, address(tokenContract));
-        console.log(_digest.toEthSignedMessageHash().recover(_signature), signer);
-        require(_verify(_digest, _signature, signer), "Not signer");
-
-        return true;
-    }
-
-    /// @dev Internal util to confirm seed sig
-    /// @param data Message hash
-    /// @param signature Sig from primary token holder
-    /// @param account address to compare with recovery
-    function _verify(
-        bytes32 data,
-        bytes memory signature,
-        address account
-    ) internal pure returns (bool) {
-        return data.toEthSignedMessageHash().recover(signature) == account;
-    }
-
-    function protectedUpdate(
-        uint256 _stateUpdate,
-        uint256 _tokenId,
-        uint256 _expiration,
-        bytes memory _signature
-    ) public validOnly(_tokenId, _expiration, _signature) returns (bool) {
-        genericState = _stateUpdate;
     }
 }
