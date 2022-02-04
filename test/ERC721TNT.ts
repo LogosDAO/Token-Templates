@@ -53,7 +53,7 @@ describe.only('ERC721 Membership', function () {
   })
 
   beforeEach(async function () {
-    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', false)) as Erc721Nt
+    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', 'someuri', false)) as Erc721Nt
     memberNft = await memberNftAbstract.connect(deployer)
     memberNftAsMinter = await memberNftAbstract.connect(minter)
     memberNftAsAnyone = await memberNftAbstract.connect(anyone)
@@ -107,7 +107,7 @@ describe.only('ERC721 Membership', function () {
 
     describe('transferability', function () {
       it('Allows transferability if set on deploy', async function () {
-        const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', true)) as Erc721Nt
+        const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', 'someuri', true)) as Erc721Nt
         memberNft = await memberNftAbstract.connect(deployer)
         await memberNft.mintAdmin(deployer.address)
         expect(await memberNft.ownerOf(1)).to.equal(deployer.address)
@@ -146,7 +146,7 @@ describe.only('ERC721 Membership s Consumer', function () {
   })
 
   beforeEach(async function () {
-    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', false)) as Erc721Nt
+    const memberNftAbstract = (await MemberNft.deploy('test', 'TEST', 'someuri', false)) as Erc721Nt
     memberNft = await memberNftAbstract.connect(deployer)
 
     await memberNft.grantRole(minterRole, minter.address)

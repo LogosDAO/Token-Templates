@@ -42,11 +42,14 @@ contract ERC721NT is ERC721Enumerable, AccessControl {
     constructor(
         string memory name_,
         string memory symbol_,
+        string memory baseURI_,
         bool _transferable
     ) ERC721(name_, symbol_) {
         _setupRole(MINTER_ROLE, msg.sender);
         _setupRole(OWNER_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        
+        _setBaseURI(baseURI_);
 
         transferable = _transferable;
     }
